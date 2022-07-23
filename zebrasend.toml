@@ -1,0 +1,12 @@
+[printer.default]
+uri = "http://localhost:631/printers/my_printer" # CUPS/IPP url
+ip = "192.168.1.37" # IP Addr for SGD commands
+port = 9100 # Port for SGD commands
+user_name = "user"
+ze_print_mode = "Peel"
+# style settings for the "message" subcommand
+[style.default]
+font_size = 45
+line_padding = 0
+invert = false
+font = "C"
