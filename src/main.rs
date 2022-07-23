@@ -2,6 +2,7 @@ mod cmd;
 mod config;
 mod sender;
 use clap::Parser;
+use cmd::sgd::{Sgd, SgdCmd};
 use ipp::attribute::*;
 use std::path::PathBuf;
 
@@ -100,20 +101,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             client.print_zpl_with_message(msg.to_vec()).await?;
         }
         Commands::Sgd { command } => {
-            let sgd_handler = cmd::sgd::Sgd::new((printer.ip.as_str(), printer.port));
+            let sgd_handler = Sgd::new((printer.ip.as_str(), printer.port));
             let resp: String = match command {
-                SGDCommands::Get { cmd } => {
-                    sgd_handler.command(cmd::sgd::SgdCmd::Get(cmd.to_vec()))?
-                }
-
-                SGDCommands::Set { cmd } => {
-                    sgd_handler.command(cmd::sgd::SgdCmd::Set(cmd.to_vec()))?
-                }
-
-                SGDCommands::Do { cmd } => {
-                    sgd_handler.command(cmd::sgd::SgdCmd::Do(cmd.to_vec()))?
-                }
+                SGDCommands::Get { cmd } => sgd_handler.create_cmd(SgdCmd::Get, cmd.to_vec())?,
+                SGDCommands::Set { cmd } => sgd_handler.create_cmd(SgdCmd::Set, cmd.to_vec())?,
+                SGDCommands::Do { cmd } => sgd_handler.create_cmd(SgdCmd::Do, cmd.to_vec())?,
             };
+
             println!("{}", resp);
         }
         Commands::Options => {

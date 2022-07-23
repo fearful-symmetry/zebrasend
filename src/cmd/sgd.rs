@@ -5,9 +5,19 @@ pub struct Sgd<A> {
 }
 
 pub enum SgdCmd {
-    Get(Vec<String>),
-    Set(Vec<String>),
-    Do(Vec<String>),
+    Set,
+    Get,
+    Do,
+}
+
+impl From<SgdCmd> for String {
+    fn from(cmd: SgdCmd) -> Self {
+        match cmd {
+            SgdCmd::Set => "setvar".to_string(),
+            SgdCmd::Get => "getvar".to_string(),
+            SgdCmd::Do => "do".to_string(),
+        }
+    }
 }
 
 impl<A: ToSocketAddrs + Copy> Sgd<A> {
@@ -17,15 +27,13 @@ impl<A: ToSocketAddrs + Copy> Sgd<A> {
     {
         Sgd { telnet_addr: addr }
     }
-    //let test = r#"! U1 getvar "ip.addr" "#;
-    //let cmd_bytes = format!("{}{}", test, );
-    pub fn command(&self, cmd_type: SgdCmd) -> Result<String, Box<dyn std::error::Error>> {
-        let string_resp: String = match cmd_type {
-            SgdCmd::Get(cmd) => self.send_sgd_string(build_sgd_cmd("getvar", cmd))?,
-            SgdCmd::Set(cmd) => self.send_sgd_string(build_sgd_cmd("setvar", cmd))?,
-            SgdCmd::Do(cmd) => self.send_sgd_string(build_sgd_cmd("do", cmd))?,
-        };
-        Ok(string_resp)
+
+    pub fn create_cmd(
+        &self,
+        cmd_type: SgdCmd,
+        args: Vec<String>,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        self.send_sgd_string(build_sgd_cmd(cmd_type.into(), args))
     }
 
     fn send_sgd_string(&self, cmd: String) -> Result<String, Box<dyn std::error::Error>> {
@@ -60,7 +68,7 @@ impl<A: ToSocketAddrs + Copy> Sgd<A> {
     }
 }
 
-fn build_sgd_cmd(cmd_type: &str, args: Vec<String>) -> String {
+fn build_sgd_cmd(cmd_type: String, args: Vec<String>) -> String {
     let prefix = "! U1";
     let postfix = std::str::from_utf8(&[13]).unwrap();
 
@@ -80,9 +88,3 @@ fn format_sgd_args(args: Vec<String>) -> String {
     }
     arg_str
 }
-
-// Telnet would be:
-// if data[data.len() - 3..data.len()] == [3, 13, 10] {
-//     println!("Done getting response.");
-//     done = true
-// }
