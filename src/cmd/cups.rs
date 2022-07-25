@@ -4,17 +4,13 @@ use std::fs::File;
 
 pub struct Sender {
     printer: config::Printer,
-    style: config::Style,
     client: IppClient,
     uri: Uri,
     attrs: Vec<IppAttribute>,
 }
 
 impl Sender {
-    pub fn new(
-        printer: config::Printer,
-        style: config::Style,
-    ) -> Result<Sender, Box<dyn std::error::Error>> {
+    pub fn new(printer: config::Printer) -> Result<Sender, Box<dyn std::error::Error>> {
         let uri: Uri = printer.uri.parse()?;
         let client = IppClient::new(uri.clone());
 
@@ -40,38 +36,10 @@ impl Sender {
 
         Ok(Sender {
             printer,
-            style,
             client,
             uri,
             attrs,
         })
-    }
-
-    // take a vec of words, format it, then send to printer
-    pub async fn print_zpl_with_message(
-        &self,
-        message: Vec<String>,
-    ) -> Result<i32, Box<dyn std::error::Error>> {
-        let font_size = self.style.font_size;
-
-        let mut fo_acc = 40;
-        let mut label_body = String::new();
-        // Create formatting for each individual line
-        for line in message {
-            label_body = format!("{}^FO10,{}^FD{}^FS", label_body, fo_acc, line);
-            fo_acc += font_size + self.style.line_padding;
-        }
-
-        let mut invert = "N";
-        if self.style.invert {
-            invert = "I"
-        }
-
-        let zpl = format!(
-            "^XA^CF{},{}^PO{}{}^XZ",
-            self.style.font, font_size, invert, label_body
-        );
-        self.print_zpl_string(zpl).await
     }
 
     /// Get the attributes associated with the printer

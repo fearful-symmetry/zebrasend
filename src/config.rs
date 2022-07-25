@@ -1,3 +1,4 @@
+use crate::cmd::zpl::MessageStyle;
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs::read_to_string;
@@ -6,7 +7,7 @@ use std::path::PathBuf;
 #[derive(Deserialize)]
 pub struct Cfg {
     pub printer: HashMap<String, Printer>,
-    pub style: HashMap<String, Style>,
+    pub style: HashMap<String, MessageStyle>,
 }
 
 #[derive(Deserialize, Clone)]

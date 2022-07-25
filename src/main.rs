@@ -1,7 +1,7 @@
 mod cmd;
 mod config;
-mod sender;
 use clap::Parser;
+use cmd::cups::Sender;
 use cmd::sgd::{Sgd, SgdCmd};
 use ipp::attribute::*;
 use std::path::PathBuf;
@@ -92,13 +92,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    let client = sender::Sender::new(printer.clone(), style)?;
+    let client = Sender::new(printer.clone())?;
     match &cli.command {
         Commands::File { name } => {
             client.print_zpl_file(name.to_string()).await?;
         }
         Commands::Message { msg } => {
-            client.print_zpl_with_message(msg.to_vec()).await?;
+            client
+                .print_zpl_string(style.create_zpl_message(msg.to_vec()))
+                .await?;
         }
         Commands::Sgd { command } => {
             let sgd_handler = Sgd::new((printer.ip.as_str(), printer.port));
