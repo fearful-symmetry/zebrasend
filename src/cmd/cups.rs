@@ -1,16 +1,18 @@
 use crate::config;
 use ipp::{attribute::*, client::*, prelude::*};
 use std::fs::File;
+use tokio::runtime::Runtime;
 
-pub struct Sender {
+pub struct Cups {
     printer: config::Printer,
     client: IppClient,
     uri: Uri,
     attrs: Vec<IppAttribute>,
 }
 
-impl Sender {
-    pub fn new(printer: config::Printer) -> Result<Sender, Box<dyn std::error::Error>> {
+/// Sender is a CUPS wrapper for sending ZPL jobs to the print server
+impl Cups {
+    pub fn new(printer: config::Printer) -> Result<Cups, Box<dyn std::error::Error>> {
         let uri: Uri = printer.uri.parse()?;
         let client = IppClient::new(uri.clone());
 
@@ -34,7 +36,7 @@ impl Sender {
             ),
         ];
 
-        Ok(Sender {
+        Ok(Cups {
             printer,
             client,
             uri,
@@ -43,9 +45,10 @@ impl Sender {
     }
 
     /// Get the attributes associated with the printer
-    pub async fn get_attrs(&self) -> Result<IppAttributes, Box<dyn std::error::Error>> {
+    pub fn get_attrs(&self) -> Result<IppAttributes, Box<dyn std::error::Error>> {
         let operation = IppOperationBuilder::get_printer_attributes(self.uri.clone()).build();
-        let resp = self.client.send(operation).await?;
+        let rt = Runtime::new()?;
+        let resp = rt.block_on(self.client.send(operation))?;
         if resp.header().status_code().is_success() {
             return Ok(resp.attributes().clone());
         }
@@ -55,24 +58,6 @@ impl Sender {
         )
         .into();
         Err(err_string)
-    }
-
-    /// Print from a ZPL file located at zpl_path
-    pub async fn print_zpl_file(
-        &self,
-        zpl_path: String,
-    ) -> Result<i32, Box<dyn std::error::Error>> {
-        let zpl_file = File::open(zpl_path)?;
-        let payload = ipp::payload::IppPayload::new(zpl_file);
-        self.print_zpl_payload(payload).await
-    }
-
-    /// print from a specified ZPL string
-    pub async fn print_zpl_string(&self, zpl: String) -> Result<i32, Box<dyn std::error::Error>> {
-        let bytes = ZplReader::new(zpl);
-        let reader = std::io::BufReader::new(bytes);
-        let payload = ipp::payload::IppPayload::new(reader);
-        self.print_zpl_payload(payload).await
     }
 
     /// send a given payload to the printer
@@ -95,6 +80,25 @@ impl Sender {
             return Err(err_string);
         }
         Ok(fetch_job_id(doc_resp.attributes()).map_or(0, |v| *v))
+    }
+
+    /// Print from a ZPL file located at zpl_path
+    pub fn send_file(&self, path: String) -> Result<String, Box<dyn std::error::Error>> {
+        let zpl_file = File::open(path)?;
+        let payload = ipp::payload::IppPayload::new(zpl_file);
+        //self.print_zpl_payload(payload).await?;
+        let rt = Runtime::new()?;
+        let job_id = rt.block_on(self.print_zpl_payload(payload))?;
+        Ok(format!("{}", job_id))
+    }
+    /// print from a specified ZPL string
+    pub fn send_string(&self, data: String) -> Result<String, Box<dyn std::error::Error>> {
+        let bytes = ZplReader::new(data);
+        let reader = std::io::BufReader::new(bytes);
+        let payload = ipp::payload::IppPayload::new(reader);
+        let rt = Runtime::new()?;
+        let job_id = rt.block_on(self.print_zpl_payload(payload))?;
+        Ok(format!("{}", job_id))
     }
 }
 

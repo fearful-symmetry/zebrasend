@@ -1,3 +1,3 @@
 pub mod cups;
-pub mod sgd;
+pub mod jetdirect;
 pub mod zpl;
