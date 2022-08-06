@@ -35,11 +35,10 @@ impl Jetdirect {
                     resp_acc.extend_from_slice(&data);
                 }
                 Event::TimedOut => {
-                    println!("Connection timed out");
                     done = true;
                 }
                 _ => {
-                    println!("Got other event: {:?}", event)
+                    println!("Got other jetdirect event: {:?}", event)
                 }
             }
         }
