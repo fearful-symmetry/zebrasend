@@ -12,7 +12,7 @@ impl Jetdirect {
 }
 
 impl Jetdirect {
-    fn send_and_get_resp(
+    fn send_command(
         &self,
         payload: String,
         handle: &mut telnet::Telnet,
@@ -28,7 +28,7 @@ impl Jetdirect {
             if quote_count >= 2 || done {
                 break;
             }
-            let event = handle.read_timeout(std::time::Duration::new(5, 0))?;
+            let event = handle.read_timeout(std::time::Duration::new(2, 0))?;
             match event {
                 Event::Data(data) => {
                     quote_count += data.iter().filter(|n| *n == &ascii_quote).count();
@@ -44,40 +44,17 @@ impl Jetdirect {
         }
         Ok(String::from_utf8(resp_acc)?)
     }
+
     pub fn send_file(&self, path: String) -> Result<String, Box<dyn std::error::Error>> {
         let payload = std::fs::read_to_string(path)?;
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-        self.send_and_get_resp(payload, &mut telnet)
+        self.send_command(payload, &mut telnet)
         //telnet.write(payload.as_bytes())
     }
 
     pub fn send_string(&self, data: String) -> Result<String, Box<dyn std::error::Error>> {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-        self.send_and_get_resp(data, &mut telnet)
+        self.send_command(data, &mut telnet)
     }
 }
 
-// impl Sender for Jetdirect {
-//     fn send_file(&self, path: String) -> Result<(), Box<dyn std::error::Error>> {
-//         let payload = std::fs::read_to_string(path)?;
-//         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-//         self.send_and_get_resp(payload, telnet)?;
-//         telnet.write(payload.as_bytes())?;
-//         Ok(())
-//     }
-
-//     fn send_string(&self, data: String) -> Result<(), Box<dyn std::error::Error>> {
-//         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-//         telnet.write(data.as_bytes())?;
-//         Ok(())
-//     }
-// }
-
-// pub fn send_jd<A>(raw_print: String, addr: A) -> Result<(), Box<dyn std::error::Error>>
-// where
-//     A: ToSocketAddrs + std::marker::Copy,
-// {
-//     let mut telnet = Telnet::connect(addr, 256)?;
-//     telnet.write(raw_print.as_bytes())?;
-//     Ok(())
-// }

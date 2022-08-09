@@ -6,7 +6,7 @@
 
 `zebrasend` uses a small config file to set the printer CUPS/IPP URL, as well as style and print settings. See `zebrasend.toml` for a maximal example.
 
-## Examples
+## Usage
 
 ```
 zebrasend 0.1.0
@@ -47,3 +47,7 @@ zebrasend sgd get memory.ram_size
 # If properly configured, print commands can be sent over either jetdirect or cups
 zebrasend -m jetdirect message "my favorite printer is the" GX430t
 ```
+
+## Example ZPL files
+The `zpl_files` folder contains a number of example ZPL files, including a variety of barcodes.
+Note that most of these files were developed and tested on a 300DPI printer with 3"x3" paper.
