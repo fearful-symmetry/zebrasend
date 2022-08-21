@@ -4,6 +4,7 @@ mod config;
 mod handler;
 use clap::Parser;
 use ipp::attribute::*;
+use cmd::jetdirect::Mode;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = cli::Args::parse();
@@ -49,8 +50,8 @@ fn send(
         }
         cli::Commands::Sgd { command } => {
             let sgd_string = command.build_cmd();
-            let resp = printer.jd_handler.send_string(sgd_string)?;
-            println!("{}", resp);
+            println!("'{}'", sgd_string);
+            printer.jd_handler.send_string(sgd_string, Mode::SGD)?;
         }
         cli::Commands::Options => {
             let attrs = printer.cups_handler.get_attrs()?;

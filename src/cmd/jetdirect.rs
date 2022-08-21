@@ -1,8 +1,16 @@
+use std::io::Write;
+
 use telnet::{Event, Telnet};
 
 pub struct Jetdirect {
     addr: String,
     port: u16,
+}
+
+#[derive(PartialEq)]
+pub enum Mode {
+    SGD,
+    Print
 }
 
 impl Jetdirect {
@@ -12,49 +20,59 @@ impl Jetdirect {
 }
 
 impl Jetdirect {
-    fn send_command(
+    fn send_command_and_print(
         &self,
         payload: String,
         handle: &mut telnet::Telnet,
-    ) -> Result<String, Box<dyn std::error::Error>> {
+        mode: Mode,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         handle.write(payload.as_bytes())?;
-        let ascii_quote: u8 = 34;
-        let mut done = false;
-        // not sure of a better way to check if a SGD command response is done,
-        // since it doesn't send any ascii control characters
-        let mut quote_count = 0;
-        let mut resp_acc = Vec::new();
+        // As far as I can tell, there's no way to detect the end of an SGD command response.
+        // There can be any number of double-quotes; there's no terminating control character, newline, etc.
+        // Only thing we can really do is print lines as we get them, and wait for a timeout.
+
+        let timeout = match mode {
+            Mode::Print => std::time::Duration::new(2, 0),
+            Mode::SGD => std::time::Duration::new(4, 0)
+        };
+        
         loop {
-            if quote_count >= 2 || done {
-                break;
-            }
-            let event = handle.read_timeout(std::time::Duration::new(2, 0))?;
+            let event = handle.read_timeout(timeout)?;
             match event {
                 Event::Data(data) => {
-                    quote_count += data.iter().filter(|n| *n == &ascii_quote).count();
-                    resp_acc.extend_from_slice(&data);
+                        if mode == Mode::SGD {
+                            let resp_part = String::from_utf8_lossy(&data);
+                            print!("{}",resp_part);
+                            std::io::stdout().flush()?;
+                            // if we got a whole error string ("?") just return now.
+                            if resp_part == String::from(r#""?""#) {
+                                println!("");
+                                break
+                            }
+                        }
+
                 }
                 Event::TimedOut => {
-                    done = true;
+                    // We don't get the linebreak at the end of a response, usually
+                    println!("");
+                    break
                 }
                 _ => {
                     println!("Got other jetdirect event: {:?}", event)
                 }
             }
         }
-        Ok(String::from_utf8(resp_acc)?)
+        Ok(())
     }
 
-    pub fn send_file(&self, path: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_file(&self, path: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
         let payload = std::fs::read_to_string(path)?;
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-        self.send_command(payload, &mut telnet)
-        //telnet.write(payload.as_bytes())
+        self.send_command_and_print(payload, &mut telnet, mode)
     }
 
-    pub fn send_string(&self, data: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_string(&self, data: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
-        self.send_command(data, &mut telnet)
+        self.send_command_and_print(data, &mut telnet, mode)
     }
 }
-

@@ -83,22 +83,22 @@ impl Cups {
     }
 
     /// Print from a ZPL file located at zpl_path
-    pub fn send_file(&self, path: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_file(&self, path: String) -> Result<(), Box<dyn std::error::Error>> {
         let zpl_file = File::open(path)?;
         let payload = ipp::payload::IppPayload::new(zpl_file);
         //self.print_zpl_payload(payload).await?;
         let rt = Runtime::new()?;
-        let job_id = rt.block_on(self.print_zpl_payload(payload))?;
-        Ok(format!("{}", job_id))
+        rt.block_on(self.print_zpl_payload(payload))?;
+        Ok(())
     }
     /// print from a specified ZPL string
-    pub fn send_string(&self, data: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_string(&self, data: String) -> Result<(), Box<dyn std::error::Error>> {
         let bytes = ZplReader::new(data);
         let reader = std::io::BufReader::new(bytes);
         let payload = ipp::payload::IppPayload::new(reader);
         let rt = Runtime::new()?;
-        let job_id = rt.block_on(self.print_zpl_payload(payload))?;
-        Ok(format!("{}", job_id))
+        rt.block_on(self.print_zpl_payload(payload))?;
+        Ok(())
     }
 }
 

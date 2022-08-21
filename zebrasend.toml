@@ -1,13 +1,24 @@
+[printer]
 [printer.default]
 uri = "http://localhost:631/printers/my_printer" # CUPS/IPP url
-ip = "192.168.1.37" # IP Addr for SGD commands
+ip = "192.168.1.37" # IP Addr for SGD commands, jetdirect
 port = 9100 # Port for SGD/Jetdirect commands
+user_name = "user" # for CUPS
+ze_print_mode = "Peel" #for CUPS
+[printer.qln220] # Specify multiple printers like this
+uri = "http://localhost:631/printers/qln220" # CUPS/IPP url
+ip = "192.168.1.200"
 user_name = "user"
 ze_print_mode = "Peel"
-# style settings for the "message" subcommand
-[style.default]
-font_size = 45
-font_width = 0
+[style] # The style section determines how the output of the message subcommand is formatted
+[style.qln220]
+font_size = 35
 line_padding = 0
+invert = true
+font = "E"
+[style.default]
+font_size = 60
+font_width = 60
+line_padding = 10
 invert = false
-font = "A"
+font = "0"

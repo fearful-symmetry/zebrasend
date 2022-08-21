@@ -1,6 +1,6 @@
 use crate::cli;
 use crate::cmd::cups::Cups;
-use crate::cmd::jetdirect::Jetdirect;
+use crate::cmd::jetdirect::{Jetdirect, Mode};
 use crate::config;
 
 /// Handler for all the different protocol handlers used by the printer
@@ -32,15 +32,15 @@ impl PrinterHandler {
         })
     }
 
-    pub fn send_file(&self, path: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_file(&self, path: String) -> Result<(), Box<dyn std::error::Error>> {
         match self.selected_handler {
-            cli::PrintMode::Jetdirect => self.jd_handler.send_file(path),
+            cli::PrintMode::Jetdirect => self.jd_handler.send_file(path, Mode::Print),
             cli::PrintMode::Cups => self.cups_handler.send_file(path),
         }
     }
-    pub fn send_string(&self, data: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn send_string(&self, data: String) -> Result<(), Box<dyn std::error::Error>> {
         match self.selected_handler {
-            cli::PrintMode::Jetdirect => self.jd_handler.send_string(data),
+            cli::PrintMode::Jetdirect => self.jd_handler.send_string(data, Mode::Print),
             cli::PrintMode::Cups => self.cups_handler.send_string(data),
         }
     }

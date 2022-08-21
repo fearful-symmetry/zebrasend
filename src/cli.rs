@@ -72,13 +72,13 @@ impl SGDCommands {
         let postfix = std::str::from_utf8(&[13]).unwrap();
         match self {
             SGDCommands::Set { cmd } => {
-                format!("{} setvar {} {}", prefix, gen_args(cmd.to_vec()), postfix)
+                format!("{} setvar{} {}", prefix, gen_args(cmd.to_vec()), postfix)
             }
             SGDCommands::Get { cmd } => {
-                format!("{} getvar {} {}", prefix, gen_args(cmd.to_vec()), postfix)
+                format!("{} getvar{} {}", prefix, gen_args(cmd.to_vec()), postfix)
             }
             SGDCommands::Do { cmd } => {
-                format!("{} do {} {}", prefix, gen_args(cmd.to_vec()), postfix)
+                format!("{} do{} {}", prefix, gen_args(cmd.to_vec()), postfix)
             }
         }
     }
