@@ -44,8 +44,7 @@ impl Jetdirect {
                             let resp_part = String::from_utf8_lossy(&data);
                             print!("{}",resp_part);
                             std::io::stdout().flush()?;
-                            // if we got a whole error string ("?") just return now.
-                            if resp_part == String::from(r#""?""#) {
+                            if return_early(&data) {
                                 println!("");
                                 break
                             }
@@ -67,12 +66,33 @@ impl Jetdirect {
 
     pub fn send_file(&self, path: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
         let payload = std::fs::read_to_string(path)?;
-        let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
+        let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
         self.send_command_and_print(payload, &mut telnet, mode)
     }
 
     pub fn send_string(&self, data: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
-        let mut telnet = Telnet::connect((self.addr.clone(), self.port), 256)?;
+        let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
         self.send_command_and_print(data, &mut telnet, mode)
     }
+}
+
+
+// some heuristics to guess if we can return early from listening on the socket
+fn return_early(payload :&[u8]) -> bool {
+    let err = r#""?""#.as_bytes();
+    if payload == err {
+        return true
+    };
+    let quote: u8 = 34;
+    let nl: u8 = 10;
+    let tab: u8 = 9;
+    // if only have two quotes, but no whitespace formatting, we probably got back a basic repsonse, can return
+    let quote_count = payload.iter().filter(|x| *x == &quote).count();
+    let ws_count = payload.iter().filter(|x| *x == &nl || *x == &tab).count();
+
+    if ws_count == 0 && quote_count == 2 {
+        return true
+    }
+
+    return false
 }
