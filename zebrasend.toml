@@ -1,7 +1,7 @@
 [printer]
 [printer.default]
 uri = "http://localhost:631/printers/my_printer" # CUPS/IPP url
-ip = "192.168.1.37" # IP Addr for SGD commands, jetdirect
+ip = "192.168.1.37" # IP Addr for SGD commands, jetdirect, FTP
 port = 9100 # Port for SGD/Jetdirect commands
 user_name = "user" # for CUPS
 ze_print_mode = "Peel" #for CUPS
@@ -11,10 +11,12 @@ ip = "192.168.1.200"
 user_name = "user"
 ze_print_mode = "Peel"
 [style] # The style section determines how the output of the message subcommand is formatted
-[style.qln220]
+[style.qln220] # You can specify multiple styles and select with the -s flag
 font_size = 35
-line_padding = 0
-invert = true
+font_width = 35
+start_point = 10 # the initial y-axis starting point on the label
+line_padding = 0 # The amount of additional padding inserted between lines
+invert = true #Rotate the label 180 degrees
 font = "E"
 [style.default]
 font_size = 60

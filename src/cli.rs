@@ -18,7 +18,7 @@ pub struct Args {
     pub style: String,
 
     /// print mode to use for file and message subcommands
-    #[clap(short='m', long, arg_enum, value_parser, default_value_t = PrintMode::Cups)]
+    #[clap(short='m', long, arg_enum, value_parser, default_value_t = PrintMode::Jetdirect)]
     pub print_mode: PrintMode,
 }
 
@@ -45,8 +45,22 @@ pub enum Commands {
         #[clap(subcommand)]
         command: SGDCommands,
     },
-    /// Return the options known to the printer
+    /// send and delete files via FTP
+    Ftp {
+        #[clap(subcommand)]
+        command: FTPCommands,
+    },
+
+    /// Return a list of known CUPS options for a printer
     Options,
+}
+
+#[derive(clap::Subcommand, Clone)]
+pub enum FTPCommands {
+    Put {
+        #[clap(value_parser)]
+        name: String,
+    }
 }
 
 #[derive(clap::Subcommand, Clone)]

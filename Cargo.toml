@@ -14,3 +14,5 @@ serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.139" 
 telnet = "0.2.1"
 dirs = "4.0.0"
+ftp = "3.0.1"
+anyhow = "1.0.62"

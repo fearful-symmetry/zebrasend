@@ -3,6 +3,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::path::PathBuf;
+use anyhow::Result;
 
 #[derive(Deserialize)]
 pub struct Cfg {
@@ -23,20 +24,8 @@ pub struct Printer {
     pub ze_print_mode: String,
 }
 
-#[derive(Deserialize, Clone)]
-pub struct Style {
-    #[serde(default = "Cfg::default_font_size")]
-    pub font_size: i32,
-    #[serde(default)]
-    pub invert: bool,
-    #[serde(default = "Cfg::default_font")]
-    pub font: String,
-    #[serde(default)]
-    pub line_padding: i32,
-}
-
 impl Cfg {
-    pub fn new(cfg_path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(cfg_path: PathBuf) -> Result<Self> {
         let cfg_str = read_to_string(cfg_path)?;
         let config: Cfg = toml::from_str(&cfg_str)?;
 
@@ -48,12 +37,6 @@ impl Cfg {
     }
     fn default_print_mode() -> String {
         String::from("Peel")
-    }
-    fn default_font_size() -> i32 {
-        35
-    }
-    fn default_font() -> String {
-        "A".to_string()
     }
     fn default_port() -> u16 {
         9100

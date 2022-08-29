@@ -2,6 +2,7 @@ use crate::config;
 use ipp::{attribute::*, client::*, prelude::*};
 use std::fs::File;
 use tokio::runtime::Runtime;
+use anyhow::Result;
 
 pub struct Cups {
     printer: config::Printer,
@@ -12,7 +13,7 @@ pub struct Cups {
 
 /// Sender is a CUPS wrapper for sending ZPL jobs to the print server
 impl Cups {
-    pub fn new(printer: config::Printer) -> Result<Cups, Box<dyn std::error::Error>> {
+    pub fn new(printer: config::Printer) -> Result<Cups> {
         let uri: Uri = printer.uri.parse()?;
         let client = IppClient::new(uri.clone());
 
@@ -45,18 +46,17 @@ impl Cups {
     }
 
     /// Get the attributes associated with the printer
-    pub fn get_attrs(&self) -> Result<IppAttributes, Box<dyn std::error::Error>> {
+    pub fn get_attrs(&self) -> Result<IppAttributes> {
         let operation = IppOperationBuilder::get_printer_attributes(self.uri.clone()).build();
         let rt = Runtime::new()?;
         let resp = rt.block_on(self.client.send(operation))?;
         if resp.header().status_code().is_success() {
             return Ok(resp.attributes().clone());
         }
-        let err_string: Box<dyn std::error::Error> = format!(
+        let err_string  = anyhow::Error::msg(format!(
             "Print-Job failed with error {:?}",
             resp.header().status_code()
-        )
-        .into();
+        ));
         Err(err_string)
     }
 
@@ -64,7 +64,7 @@ impl Cups {
     async fn print_zpl_payload(
         &self,
         zpl: ipp::payload::IppPayload,
-    ) -> Result<i32, Box<dyn std::error::Error>> {
+    ) -> Result<i32> {
         let print_job_op = IppOperationBuilder::print_job(self.uri.clone(), zpl)
             .attributes(self.attrs.clone())
             .job_title("home_addr.zpl")
@@ -72,18 +72,17 @@ impl Cups {
             .build();
         let doc_resp = self.client.send(print_job_op).await?;
         if !doc_resp.header().status_code().is_success() {
-            let err_string: Box<dyn std::error::Error> = format!(
+            let err_string = anyhow::Error::msg(format!(
                 "Print-Job failed with error {:?}",
                 doc_resp.header().status_code()
-            )
-            .into();
+            ));
             return Err(err_string);
         }
         Ok(fetch_job_id(doc_resp.attributes()).map_or(0, |v| *v))
     }
 
     /// Print from a ZPL file located at zpl_path
-    pub fn send_file(&self, path: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn send_file(&self, path: String) -> Result<()> {
         let zpl_file = File::open(path)?;
         let payload = ipp::payload::IppPayload::new(zpl_file);
         //self.print_zpl_payload(payload).await?;
@@ -92,7 +91,7 @@ impl Cups {
         Ok(())
     }
     /// print from a specified ZPL string
-    pub fn send_string(&self, data: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn send_string(&self, data: String) -> Result<()> {
         let bytes = ZplReader::new(data);
         let reader = std::io::BufReader::new(bytes);
         let payload = ipp::payload::IppPayload::new(reader);

@@ -1,4 +1,6 @@
 use std::io::Write;
+use anyhow::Result;
+
 
 use telnet::{Event, Telnet};
 
@@ -25,7 +27,7 @@ impl Jetdirect {
         payload: String,
         handle: &mut telnet::Telnet,
         mode: Mode,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<()> {
         handle.write(payload.as_bytes())?;
         // As far as I can tell, there's no way to detect the end of an SGD command response.
         // There can be any number of double-quotes; there's no terminating control character, newline, etc.
@@ -64,13 +66,13 @@ impl Jetdirect {
         Ok(())
     }
 
-    pub fn send_file(&self, path: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn send_file(&self, path: String, mode: Mode) -> Result<()> {
         let payload = std::fs::read_to_string(path)?;
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
         self.send_command_and_print(payload, &mut telnet, mode)
     }
 
-    pub fn send_string(&self, data: String, mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn send_string(&self, data: String, mode: Mode) -> Result<()> {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
         self.send_command_and_print(data, &mut telnet, mode)
     }

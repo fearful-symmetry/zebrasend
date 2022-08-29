@@ -1,6 +1,6 @@
 # Zebrasend
 
-`zebrasend` is a small rust utility for sending commands and print jobs to Zebra label printers via CUPS, SGD, jetdirect and ZPL.
+`zebrasend` is a small rust utility for sending commands and print jobs to Zebra label printers via CUPS, SGD, FTIP jetdirect and ZPL.
 
 ## Config
 
@@ -36,6 +36,9 @@ SUBCOMMANDS:
 ```
 # Send a ZPL file to a printer
 zebrasend file home_address.zpl
+
+# Send a ZPL file via FTP
+zebrasend ftp put home_address.zpl
 
 # Send a text message to the printer. Each word will be printed on a new line, unless surrounded by quotes.
 zebrasend message "my favorite printer is the" GX430t

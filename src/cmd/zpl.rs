@@ -12,6 +12,8 @@ pub struct MessageStyle {
     pub font: String,
     #[serde(default)]
     pub line_padding: i32,
+    #[serde(default)]
+    pub start_point: i32,
 }
 
 fn default_font_size() -> i32 {
@@ -25,7 +27,7 @@ impl MessageStyle {
     pub fn create_zpl_message(self, message: Vec<String>) -> String {
         let font_size = self.font_size;
 
-        let mut fo_acc = 40;
+        let mut fo_acc = self.start_point;
         let mut label_body = String::new();
         // Create formatting for each individual line
         for line in message {

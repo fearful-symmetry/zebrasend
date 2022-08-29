@@ -3,16 +3,19 @@ mod cmd;
 mod config;
 mod handler;
 use clap::Parser;
+use cli::FTPCommands;
 use ipp::attribute::*;
 use cmd::jetdirect::Mode;
+use cmd::ftp::send_file;
+use anyhow::Result;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let cli = cli::Args::parse();
     let config_path = match cli.config_file.clone() {
         Some(c) => c,
         None => {
             let mut home =
-                dirs::home_dir().ok_or("Could not find home dir and no config path set")?;
+                dirs::home_dir().ok_or(anyhow::Error::msg("Could not find home dir and no config path set"))?;
             home.push(".zebrasend.toml");
             home
         }
@@ -21,8 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let style = match cfg.style.remove(&cli.style) {
         Some(s) => s,
         None => {
-            let err_msg: Box<dyn std::error::Error> =
-                format!("Style {} does not exist in config", cli.style).into();
+            let err_msg =
+                anyhow::Error::msg(format!("Style {} does not exist in config", cli.style));
             return Err(err_msg);
         }
     };
@@ -39,7 +42,7 @@ fn send(
     printer: handler::PrinterHandler,
     cmd: cli::Args,
     style: cmd::zpl::MessageStyle,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     match &cmd.command {
         cli::Commands::File { name } => {
             printer.send_file(name.to_string())?;
@@ -56,6 +59,21 @@ fn send(
         cli::Commands::Options => {
             let attrs = printer.cups_handler.get_attrs()?;
             print_attrs(attrs);
+        },
+        cli::Commands::Ftp { command } => {
+            handle_ftp(command, printer)?;
+        }
+    }
+
+    Ok(()) 
+}
+
+fn handle_ftp(cmd: &FTPCommands, printer: handler::PrinterHandler) -> Result<()> {
+
+    match cmd {
+        FTPCommands::Put { name } => {
+            println!("IP: {}", printer.printer_ip);
+            send_file(&printer.printer_ip, name)?;
         }
     }
 
