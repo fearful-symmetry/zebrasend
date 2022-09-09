@@ -5,7 +5,7 @@ use anyhow::Result;
 use telnet::{Event, Telnet};
 
 pub struct Jetdirect {
-    addr: String,
+    pub addr: String,
     port: u16,
 }
 

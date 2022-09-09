@@ -1,15 +1,9 @@
 [printer]
 [printer.default]
-uri = "http://localhost:631/printers/my_printer" # CUPS/IPP url
 ip = "192.168.1.37" # IP Addr for SGD commands, jetdirect, FTP
 port = 9100 # Port for SGD/Jetdirect commands
-user_name = "user" # for CUPS
-ze_print_mode = "Peel" #for CUPS
 [printer.qln220] # Specify multiple printers like this
-uri = "http://localhost:631/printers/qln220" # CUPS/IPP url
 ip = "192.168.1.200"
-user_name = "user"
-ze_print_mode = "Peel"
 [style] # The style section determines how the output of the message subcommand is formatted
 [style.qln220] # You can specify multiple styles and select with the -s flag
 font_size = 35

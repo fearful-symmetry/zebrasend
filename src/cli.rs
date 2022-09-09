@@ -16,10 +16,6 @@ pub struct Args {
     /// Style from the specified config to use
     #[clap(short, long, value_parser, default_value_t = String::from("default"))]
     pub style: String,
-
-    /// print mode to use for file and message subcommands
-    #[clap(short='m', long, arg_enum, value_parser, default_value_t = PrintMode::Jetdirect)]
-    pub print_mode: PrintMode,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, clap::ArgEnum)]
@@ -50,9 +46,6 @@ pub enum Commands {
         #[clap(subcommand)]
         command: FTPCommands,
     },
-
-    /// Return a list of known CUPS options for a printer
-    Options,
 }
 
 #[derive(clap::Subcommand, Clone)]
