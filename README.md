@@ -9,6 +9,7 @@
 ## Usage
 
 ```
+zebrasend --help
 zebrasend 0.1.0
 A CLI utility for sending commands to zebra printers via CUPS
 
@@ -16,18 +17,21 @@ USAGE:
     zebrasend [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
-    -c, --config-file <FILE>         
-    -h, --help                       Print help information
-    -p, --printer <PRINTER>          Printer from the specified config to use [default: default]
-    -s, --style <STYLE>              Style from the specified config to use [default: default]
-    -V, --version                    Print version information
+    -c, --config-file <FILE>    
+    -h, --help                  Print help information
+    -p, --printer <PRINTER>     Printer from the specified config to use [default: default]
+    -s, --style <STYLE>         Style from the specified config to use [default: default]
+    -V, --version               Print version information
 
 SUBCOMMANDS:
-    file       Send a ZPL file to the printer
-    help       Print this message or the help of the given subcommand(s)
-    message    Send a string message to the printer. Individual words will be printed to new
-                   lines, use quotes to print on a single line
-    sgd        Send SGD commands to printer via telnet
+    file        Send a ZPL file to the printer
+    ftp         send and delete files via FTP
+    help        Print this message or the help of the given subcommand(s)
+    message     Send a string message to the printer. Individual words will be printed to new
+                    lines, use quotes to print on a single line
+    printers    Print a list of configured printers
+    sgd         Send SGD commands to printer via telnet
+    styles      Print a list of configured styles
 ```
 
 ```
@@ -44,8 +48,6 @@ zebrasend message "my favorite printer is the" GX430t
 zebrasend sgd get memory.ram_size
 "2054496 Bytes"
 
-# If properly configured, print commands can be sent over either jetdirect or cups
-zebrasend -m jetdirect message "my favorite printer is the" GX430t
 ```
 
 ## Example ZPL files

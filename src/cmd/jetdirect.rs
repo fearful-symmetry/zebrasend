@@ -1,6 +1,7 @@
 use std::io::Write;
 use anyhow::Result;
-
+use crate::cmd::sgd;
+use std::time::Duration;
 
 use telnet::{Event, Telnet};
 
@@ -27,16 +28,12 @@ impl Jetdirect {
         payload: String,
         handle: &mut telnet::Telnet,
         mode: Mode,
+        timeout: Duration
     ) -> Result<()> {
         handle.write(payload.as_bytes())?;
         // As far as I can tell, there's no way to detect the end of an SGD command response.
         // There can be any number of double-quotes; there's no terminating control character, newline, etc.
         // Only thing we can really do is print lines as we get them, and wait for a timeout.
-
-        let timeout = match mode {
-            Mode::Print => std::time::Duration::new(2, 0),
-            Mode::SGD => std::time::Duration::new(4, 0)
-        };
         
         loop {
             let event = handle.read_timeout(timeout)?;
@@ -54,7 +51,7 @@ impl Jetdirect {
 
                 }
                 Event::TimedOut => {
-                    // We don't get the linebreak at the end of a response, usually
+                    // We don't get the line break at the end of a response, usually
                     println!("");
                     break
                 }
@@ -69,13 +66,25 @@ impl Jetdirect {
     pub fn send_file(&self, path: String, mode: Mode) -> Result<()> {
         let payload = std::fs::read_to_string(path)?;
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
-        self.send_command_and_print(payload, &mut telnet, mode)
+        self.send_command_and_print(payload, &mut telnet, mode, Duration::new(2, 0))
     }
 
     pub fn send_string(&self, data: String, mode: Mode) -> Result<()> {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
-        self.send_command_and_print(data, &mut telnet, mode)
+        self.send_command_and_print(data, &mut telnet, mode, Duration::new(2, 0))
     }
+
+   pub fn send_sgd_cmd(&self, data: sgd::SGDCommands) -> Result<()> {
+        let sgd_string = data.build_cmd();
+        let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
+        // Set different timeouts depending on what command type we're doing.
+        let timeout = match data {
+            sgd::SGDCommands::Get { cmd: _ } => Duration::new(4, 0),
+            sgd::SGDCommands::Set { cmd: _ } => Duration::new(0, 100),
+            sgd::SGDCommands::Do { cmd: _ } => Duration::new(4, 0),
+        };
+        self.send_command_and_print(sgd_string, &mut telnet, Mode::SGD, timeout)
+   }
 }
 
 
