@@ -1,13 +1,18 @@
-#[derive(clap::Subcommand, Clone)]
+use clap::Subcommand;
+
+#[derive(Subcommand, Clone)]
 pub enum SGDCommands {
+    ///! U1 getvar
     Get {
         #[clap(value_parser)]
         cmd: Vec<String>,
     },
+    ///! U1 setvar
     Set {
         #[clap(value_parser)]
         cmd: Vec<String>,
     },
+    ///! U1 do
     Do {
         #[clap(value_parser)]
         cmd: Vec<String>,

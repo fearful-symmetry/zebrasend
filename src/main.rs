@@ -50,7 +50,21 @@ fn send(
 
     match &cmd.command {
         cli::Commands::File { name } => {
-            printer.send_file(name.to_string(), Mode::Print)?;
+            let print_mode = match std::path::Path::new(name).extension(){
+                Some(ext) => {
+                    match ext.to_string_lossy().as_ref() {
+                        "nrd" => {
+                            Mode::SGD
+                        }
+                        _ => {
+                            Mode::Print
+                        }
+                    }
+                }
+                None => Mode::Print
+            };
+            println!("Printing file with mode: {:?}", print_mode);
+            printer.send_file(name.to_string(), print_mode)?;
         }
         cli::Commands::Message { msg } => {
             let print_msg = style.clone().create_zpl_message(msg.to_vec());

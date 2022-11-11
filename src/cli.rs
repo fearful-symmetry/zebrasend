@@ -27,7 +27,7 @@ pub enum PrintMode {
 
 #[derive(clap::Subcommand, Clone)]
 pub enum Commands {
-    /// Send a ZPL file to the printer
+    /// Send a ZPL or NRD file to the printer
     File {
         #[clap(value_parser)]
         name: String,

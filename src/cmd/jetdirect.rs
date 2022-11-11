@@ -10,7 +10,7 @@ pub struct Jetdirect {
     port: u16,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Mode {
     SGD,
     Print
@@ -34,7 +34,7 @@ impl Jetdirect {
         // As far as I can tell, there's no way to detect the end of an SGD command response.
         // There can be any number of double-quotes; there's no terminating control character, newline, etc.
         // Only thing we can really do is print lines as we get them, and wait for a timeout.
-        
+
         loop {
             let event = handle.read_timeout(timeout)?;
             match event {
@@ -97,7 +97,7 @@ fn return_early(payload :&[u8]) -> bool {
     let quote: u8 = 34;
     let nl: u8 = 10;
     let tab: u8 = 9;
-    // if only have two quotes, but no whitespace formatting, we probably got back a basic repsonse, can return
+    // if only have two quotes, but no whitespace formatting, we probably got back a basic response, can return
     let quote_count = payload.iter().filter(|x| *x == &quote).count();
     let ws_count = payload.iter().filter(|x| *x == &nl || *x == &tab).count();
 
