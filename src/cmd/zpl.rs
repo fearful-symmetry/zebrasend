@@ -14,6 +14,12 @@ pub struct MessageStyle {
     pub line_padding: i32,
     #[serde(default)]
     pub start_point: i32,
+    #[serde(default = "default_indent")]
+    pub indent: i32
+}
+
+fn default_indent() -> i32 {
+    10
 }
 
 fn default_font_size() -> i32 {
@@ -31,7 +37,7 @@ impl MessageStyle {
         let mut label_body = String::new();
         // Create formatting for each individual line
         for line in message {
-            label_body = format!("{}^FO10,{}^FD{}^FS", label_body, fo_acc, line);
+            label_body = format!("{}^FO{},{}^FD{}^FS", label_body, self.indent, fo_acc, line);
             fo_acc += font_size + self.line_padding;
         }
 

@@ -35,7 +35,7 @@ SUBCOMMANDS:
 ```
 
 ```
-# Send a ZPL file to a printer
+# Send a ZPL or NRD file to a printer
 zebrasend file home_address.zpl
 
 # Send a ZPL file via FTP

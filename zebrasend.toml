@@ -16,5 +16,6 @@ font = "E"
 font_size = 60
 font_width = 60
 line_padding = 10
+indent = 15
 invert = false
 font = "0"
