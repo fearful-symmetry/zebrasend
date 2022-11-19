@@ -1,9 +1,12 @@
-use std::io::Write;
-use anyhow::Result;
+use std::io::{Write, ErrorKind};
+use anyhow::{Result, Context};
 use crate::cmd::sgd;
 use std::time::Duration;
-
+use std::env;
 use telnet::{Event, Telnet};
+
+use std::io::prelude::*;
+use std::net::TcpStream;
 
 pub struct Jetdirect {
     pub addr: String,
@@ -23,6 +26,48 @@ impl Jetdirect {
 }
 
 impl Jetdirect {
+    fn send_cmd_net_raw(
+        &self,
+        payload: String,
+        timeout: Duration
+    ) -> Result<()> {
+
+        let mut stream = TcpStream::connect("192.168.1.180:9100").with_context(|| "error connecting to printer")?;
+        stream.write(payload.as_bytes()).with_context(|| "error writing message")?;
+        stream.set_nonblocking(false).with_context(|| "error setting nonblocking mode")?;
+        stream.set_read_timeout(Some(timeout)).with_context(|| "error setting read timeout")?;
+        let mut resp_vec: Vec<u8> = Vec::new();
+        loop {
+            // There's no way to tell if we're done reading a response as far as I can tell
+            // so read the stupid thing in one chunk at a time
+            let mut read_buf = [0; 1];
+            // if we get an error, it could be a timeout and we're done reading
+            let read_bytes = match stream.read(&mut read_buf) {
+                Ok(b) => b,
+                Err(e) => {
+                    if e.kind() == ErrorKind::WouldBlock {
+                        continue
+                    }
+                    let quote: u8 = 34;
+                    let quotes = resp_vec.iter().filter(|x| *x == &quote).count();
+                    if quotes >= 2 {
+                        0
+                    } else {
+                        println!("Error in read call:");
+                        return Err(e.into());
+                    }
+                }
+            };
+            resp_vec.append(&mut read_buf.to_vec());
+            //print!("{}", resp);
+            if read_bytes == 0 || return_early(&resp_vec) {
+                println!("{}", String::from_utf8_lossy(&resp_vec));
+                break
+            }
+        }
+            
+        Ok(())
+    }
     fn send_command_and_print(
         &self,
         payload: String,
@@ -79,11 +124,15 @@ impl Jetdirect {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
         // Set different timeouts depending on what command type we're doing.
         let timeout = match data {
-            sgd::SGDCommands::Get { cmd: _ } => Duration::new(4, 0),
+            sgd::SGDCommands::Get { cmd: _ } => Duration::new(2, 0),
             sgd::SGDCommands::Set { cmd: _ } => Duration::new(0, 100),
-            sgd::SGDCommands::Do { cmd: _ } => Duration::new(4, 0),
+            sgd::SGDCommands::Do { cmd: _ } => Duration::new(2, 0),
         };
-        self.send_command_and_print(sgd_string, &mut telnet, Mode::SGD, timeout)
+        match env::var_os("SGD_NO_TELNET") {
+            Some(_) =>  self.send_cmd_net_raw(sgd_string, timeout),
+            None => self.send_command_and_print(sgd_string, &mut telnet, Mode::SGD, timeout)
+        }
+        
    }
 }
 

@@ -4,7 +4,7 @@
 
 ## Config
 
-`zebrasend` uses a small config file to set the printer CUPS/IPP URL, as well as style and print settings. See `zebrasend.toml` for a maximal example.
+`zebrasend` uses a small config file to set the printer URLs and style settings, as well as style and print settings. See `zebrasend.toml` for a maximal example.
 
 ## Usage
 

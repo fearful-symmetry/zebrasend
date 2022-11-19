@@ -47,7 +47,7 @@ pub enum Commands {
         #[clap(subcommand)]
         command: FTPCommands,
     },
-    /// Print a list of configured styles
+    /// Print a list of configured styles used by the 'message' command
     Styles,
     /// Print a list of configured printers
     Printers,
