@@ -53,3 +53,8 @@ zebrasend sgd get memory.ram_size
 ## Example ZPL files
 The `zpl_files` folder contains a number of example ZPL files, including a variety of barcodes.
 Note that most of these files were developed and tested on a 300DPI printer with 3"x3" paper.
+
+## TODO
+
+- Add `--count` flag
+- Add `--raw` flag

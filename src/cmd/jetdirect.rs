@@ -116,7 +116,7 @@ impl Jetdirect {
 
     pub fn send_string(&self, data: String, mode: Mode) -> Result<()> {
         let mut telnet = Telnet::connect((self.addr.clone(), self.port), 512)?;
-        self.send_command_and_print(data, &mut telnet, mode, Duration::new(2, 0))
+        self.send_command_and_print(data, &mut telnet, mode, Duration::new(0, 500))
     }
 
    pub fn send_sgd_cmd(&self, data: sgd::SGDCommands) -> Result<()> {
