@@ -57,4 +57,3 @@ Note that most of these files were developed and tested on a 300DPI printer with
 ## TODO
 
 - Add `--count` flag
-- Add `--raw` flag

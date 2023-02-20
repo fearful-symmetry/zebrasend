@@ -70,6 +70,9 @@ fn send(
             let print_msg = style.clone().create_zpl_message(msg.to_vec());
             printer.send_string(print_msg, Mode::Print)?;
         }
+        cli::Commands::Raw { msg } => {
+            printer.send_string(msg.to_string(), Mode::Print)?;
+        }
         cli::Commands::Sgd { command } => {
             printer.send_sgd_cmd(command.clone())?;
         }

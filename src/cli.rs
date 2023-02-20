@@ -37,6 +37,11 @@ pub enum Commands {
         #[clap(value_parser)]
         msg: Vec<String>,
     },
+    /// Sends a raw ZPL string to the printer
+    Raw {
+        #[clap(value_parser)]
+        msg: String,
+    },
     /// Send SGD commands to printer via telnet
     Sgd {
         #[clap(subcommand)]
