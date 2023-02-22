@@ -36,11 +36,17 @@ pub enum Commands {
     Message {
         #[clap(value_parser)]
         msg: Vec<String>,
+        /// Print the message n times
+        #[clap(short, long, value_parser, default_value_t = 1)]
+        count: i32,
     },
     /// Sends a raw ZPL string to the printer
     Raw {
         #[clap(value_parser)]
         msg: String,
+        /// Print the message n times
+        #[clap(short, long, value_parser, default_value_t = 1)]
+        count: i32,
     },
     /// Send SGD commands to printer via telnet
     Sgd {
@@ -57,6 +63,8 @@ pub enum Commands {
     /// Print a list of configured printers
     Printers,
 }
+
+
 
 #[derive(clap::Subcommand, Clone)]
 pub enum FTPCommands {

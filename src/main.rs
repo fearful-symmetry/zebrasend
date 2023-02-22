@@ -66,12 +66,18 @@ fn send(
             println!("Printing file with mode: {:?}", print_mode);
             printer.send_file(name.to_string(), print_mode)?;
         }
-        cli::Commands::Message { msg } => {
+        cli::Commands::Message { msg, count } => {
             let print_msg = style.clone().create_zpl_message(msg.to_vec());
-            printer.send_string(print_msg, Mode::Print)?;
+            for _ in 0..*count  {
+                printer.send_string(print_msg.clone(), Mode::Print)?;
+            }
+            
         }
-        cli::Commands::Raw { msg } => {
-            printer.send_string(msg.to_string(), Mode::Print)?;
+        cli::Commands::Raw { msg, count } => {
+            for _ in 0..*count {
+                printer.send_string(msg.to_string(), Mode::Print)?;
+            }
+            
         }
         cli::Commands::Sgd { command } => {
             printer.send_sgd_cmd(command.clone())?;
