@@ -8,6 +8,8 @@ use cmd::ftp::send_file;
 use anyhow::Result;
 use std::collections::HashMap;
 
+use crate::cmd::sgd::SGDCommands;
+
 fn main() -> Result<()> {
     let cli = cli::Args::parse();
     let config_path = match cli.config_file.clone() {
@@ -54,7 +56,7 @@ fn send(
                 Some(ext) => {
                     match ext.to_string_lossy().as_ref() {
                         "nrd" => {
-                            Mode::SGD
+                            Mode::Sgd
                         }
                         _ => {
                             Mode::Print
@@ -67,7 +69,12 @@ fn send(
             printer.send_file(name.to_string(), print_mode)?;
         }
         cli::Commands::Message { msg, count } => {
-            let print_msg = style.clone().create_zpl_message(msg.to_vec());
+            let print_msg = style.create_zpl_message(msg.to_vec());
+            if let Some(cmd_raw) = &style.precommand{
+                println!("running precommand: '{}'", cmd_raw);
+                let precmd: SGDCommands = cmd_raw.parse()?;
+                printer.send_sgd_cmd(precmd)?;
+            }
             for _ in 0..*count  {
                 printer.send_string(print_msg.clone(), Mode::Print)?;
             }

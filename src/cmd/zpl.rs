@@ -15,7 +15,8 @@ pub struct MessageStyle {
     #[serde(default)]
     pub start_point: i32,
     #[serde(default = "default_indent")]
-    pub indent: i32
+    pub indent: i32,
+    pub precommand: Option<String>
 }
 
 fn default_indent() -> i32 {
@@ -30,7 +31,7 @@ fn default_font() -> String {
 }
 
 impl MessageStyle {
-    pub fn create_zpl_message(self, message: Vec<String>) -> String {
+    pub fn create_zpl_message(&self, message: Vec<String>) -> String {
         let font_size = self.font_size;
 
         let mut fo_acc = self.start_point;

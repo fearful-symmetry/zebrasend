@@ -1,6 +1,9 @@
+use std::str::FromStr;
+
+use anyhow::{anyhow, Ok};
 use clap::Subcommand;
 
-#[derive(Subcommand, Clone)]
+#[derive(Subcommand, Clone, PartialEq, Debug)]
 pub enum SGDCommands {
     ///! U1 getvar
     Get {
@@ -17,6 +20,34 @@ pub enum SGDCommands {
         #[clap(value_parser)]
         cmd: Vec<String>,
     },
+}
+
+
+impl FromStr for SGDCommands {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let cmds: Vec<String> =  s.split_ascii_whitespace().map(|s| s.to_string()).collect();
+        if cmds.len() < 3 {
+            return Err(anyhow!("{} does not appear to be a full SGD command", s));
+        };
+
+        let final_cmds: Vec<String> = cmds[1..cmds.len()].to_vec();
+
+        match cmds[0].as_ref() {
+            "setvar" =>{
+               Ok(SGDCommands::Set { cmd: final_cmds })
+            },
+            "getvar" => {
+                Ok(SGDCommands::Get { cmd: final_cmds })
+            }, 
+            "do" => {
+                Ok(SGDCommands::Do { cmd: final_cmds })
+            },
+            _ =>{
+                Err(anyhow!("first verb must be one of 'setvar', 'getvar', or 'do'"))
+            }
+        }
+    }
 }
 
 impl SGDCommands {
@@ -45,4 +76,17 @@ fn gen_args(args: Vec<String>) -> String {
         arg_str = format!("{} \"{}\"", arg_str, elem)
     }
     arg_str
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SGDCommands;
+
+    #[test]
+    fn test_parse_sgd() {
+        let test_str: anyhow::Result<SGDCommands> = "setvar ezpl.print_width 200".parse();
+        let res = test_str.unwrap();
+        assert_eq!(SGDCommands::Set { cmd: vec!["ezpl.print_width".to_string(), "200".to_string()] }, res)
+    }
+
 }

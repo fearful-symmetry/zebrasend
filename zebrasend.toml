@@ -12,6 +12,7 @@ start_point = 10 # the initial y-axis starting point on the label
 line_padding = 0 # The amount of additional padding inserted between lines
 invert = true #Rotate the label 180 degrees
 font = "E"
+precommand = "setvar ezpl.print_width 200" # an optional field that will run the given command before the message is printed
 [style.default]
 font_size = 60
 font_width = 60

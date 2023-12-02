@@ -4,7 +4,7 @@ use crate::cmd::sgd::SGDCommands;
 
 #[derive(Parser, Clone)]
 #[clap(author, version, long_about = None)]
-#[clap(about = "A CLI utility for sending commands to zebra printers via CUPS")]
+#[clap(about = "A CLI utility for sending commands to zebra printers via Jetdirect and FTP")]
 #[clap(propagate_version = true)]
 pub struct Args {
     #[clap(subcommand)]

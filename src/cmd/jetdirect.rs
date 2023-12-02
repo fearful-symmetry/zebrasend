@@ -15,7 +15,7 @@ pub struct Jetdirect {
 
 #[derive(PartialEq, Debug)]
 pub enum Mode {
-    SGD,
+    Sgd,
     Print
 }
 
@@ -79,25 +79,22 @@ impl Jetdirect {
         // As far as I can tell, there's no way to detect the end of an SGD command response.
         // There can be any number of double-quotes; there's no terminating control character, newline, etc.
         // Only thing we can really do is print lines as we get them, and wait for a timeout.
-
+        let mut resp = String::new();
         loop {
             let event = handle.read_timeout(timeout)?;
             match event {
                 Event::Data(data) => {
-                        if mode == Mode::SGD {
+                        if mode == Mode::Sgd {
                             let resp_part = String::from_utf8_lossy(&data);
-                            print!("{}",resp_part);
+                            resp.push_str(&resp_part);
                             std::io::stdout().flush()?;
                             if return_early(&data) {
-                                println!("");
                                 break
                             }
                         }
-
                 }
                 Event::TimedOut => {
                     // We don't get the line break at the end of a response, usually
-                    println!("");
                     break
                 }
                 _ => {
@@ -105,6 +102,10 @@ impl Jetdirect {
                 }
             }
         }
+        if  !resp.is_empty() {
+            println!("{}", resp);
+        }
+
         Ok(())
     }
 
@@ -130,7 +131,7 @@ impl Jetdirect {
         };
         match env::var_os("SGD_NO_TELNET") {
             Some(_) =>  self.send_cmd_net_raw(sgd_string, timeout),
-            None => self.send_command_and_print(sgd_string, &mut telnet, Mode::SGD, timeout)
+            None => self.send_command_and_print(sgd_string, &mut telnet, Mode::Sgd, timeout)
         }
         
    }
@@ -154,5 +155,5 @@ fn return_early(payload :&[u8]) -> bool {
         return true
     }
 
-    return false
+    false
 }
